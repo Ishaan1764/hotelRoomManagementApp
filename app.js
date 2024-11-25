@@ -1,7 +1,7 @@
 const express=require('express');
 const cors=require('cors');
 const mongoose=require('mongoose');
-const {addRoom, getRooms}=require("./modules/roomModule")
+const {addRoom, getRooms,updateRoom, deleteRoom}=require("./modules/roomModule")
 
 const port=3001;
 const app=express();
@@ -21,6 +21,12 @@ db.once('open',()=>{
 
     //^getRooms
     app.get('/api/v1/rooms',getRooms);
+
+    //^Update Room
+    app.put('/rooms/:roomNumber?', updateRoom);
+
+    //^Delete Room
+    app.delete('rooms/:roomNumber?',deleteRoom)
 });
 
 app.listen(port,()=>{
