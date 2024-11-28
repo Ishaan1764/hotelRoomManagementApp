@@ -1,7 +1,8 @@
 const express=require('express');
 const cors=require('cors');
 const mongoose=require('mongoose');
-const {addRoom, getRooms,updateRoom, deleteRoom}=require("./modules/roomModule")
+const {addRoom, getRooms,updateRoom, deleteRoom}=require("./modules/roomModule");
+const { createBooking } = require('./modules/bookingRoute');
 
 const port=3001;
 const app=express();
@@ -16,17 +17,20 @@ const db = mongoose.connection;
 db.on('error', (err) => { console.log(err); });
 db.once('open',()=>{
 
-    //^Creating rooms
-    app.post('/api/v1/createRoom', addRoom);
+    //^Creating Rooms
+    app.post('/rooms', addRoom);
 
-    //^getRooms
-    app.get('/api/v1/rooms',getRooms);
+    //^get Rooms
+    app.get('/rooms',getRooms);
 
-    //^Update Room
+    //^Update Rooms
     app.put('/rooms/:roomNumber?', updateRoom);
 
-    //^Delete Room
-    app.delete('rooms/:roomNumber?',deleteRoom)
+    //^Delete Rooms
+    app.delete('/rooms/:roomNumber?',deleteRoom);
+
+    //^Creating a booking
+    app.post('/bookings',createBooking);
 });
 
 app.listen(port,()=>{

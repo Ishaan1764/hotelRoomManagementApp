@@ -45,17 +45,16 @@ async function getRooms(req,res){
 
 async function updateRoom(req, res) {
   try {
-    const { roomNumber } = req.params; // Optional parameter for single-room update
+    const roomNumber = req.params.roomNumber; // Optional parameter for single-room update
     const filter = req.body.filter || {}; // Filter for multiple-room update
-    const updateData = req.body.update; // Fields to update
+    const updateData = req.body; // Fields to update
     const options = req.body.options || {}; // Options (optional)
 
     if (roomNumber) {
       // Single-room update using roomNumber
-      const updatedRoom = await Room.findOneAndUpdate(
+      const updatedRoom = await Room.updateOne(
         { roomNumber },
         { $set: updateData },
-        { new: true, runValidators: true } // Return updated document
       );
 
       if (!updatedRoom) {
@@ -82,14 +81,14 @@ async function updateRoom(req, res) {
 
 async function deleteRoom(req, res) {
   try {
-    const { roomNumber } = req.params; // Optional parameter for single-room delete
+    const roomNumber = req.params.roomNumber; // Optional parameter for single-room delete
     const filter = req.body.filter || {}; // Filter for multiple-room delete
 
     if (roomNumber) {
       // Single-room delete using roomNumber
-      const deletedRoom = await Room.findOneAndDelete({ roomNumber });
+      const deletedRoom = await Room.deleteOne({ roomNumber });
 
-      if (!deletedRoom) {
+      if (!deletedRoom.deletedCount) {
         return res.status(404).json({ message: 'Room not found.' });
       }
 
