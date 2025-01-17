@@ -2,8 +2,8 @@ const express=require('express');
 const cors=require('cors');
 const mongoose=require('mongoose');
 const {addRoom, getRooms,updateRoom, deleteRoom}=require("./modules/roomModule");
-const { createBooking } = require('./modules/bookingRoute');
-
+const { createBooking, getBooking } = require('./modules/bookingRoute');
+const { getMonthlyAnalytics } = require('./modules/analyticsModule'); // Import the analytics function
 const port=3001;
 const app=express();
 app.use(cors());
@@ -30,7 +30,12 @@ db.once('open',()=>{
     app.delete('/rooms/:roomNumber?',deleteRoom);
 
     //^Creating a booking
-    app.post('/bookings',createBooking);
+    app.post('/bookings?',createBooking);
+
+    //^Get Bookings
+    app.get('/bookings',getBooking);
+
+    app.get('/analytics', getMonthlyAnalytics);
 });
 
 app.listen(port,()=>{

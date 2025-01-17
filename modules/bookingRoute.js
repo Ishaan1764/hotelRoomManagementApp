@@ -1,18 +1,17 @@
-const Booking=require("../models/booking");
-const {Room,ROOM_STATUS}=require("../models/room");
+const Booking = require("../models/booking");
+const { Room, ROOM_STATUS } = require("../models/room");
 
-async function createBooking(req,res){
-    try{
+// Create a booking
+async function createBooking(req, res) {
+    try {
         const { roomNumber, guestName, checkInDate, checkOutDate, totalPrice } = req.body;
 
-        //^ making sure that room exists and is available.
-        const isroom = await Room.findOne({roomNumber,status:'Available'});
-        if(!isroom){
-            return res.status(404).json({ message: 'Room not found or not available.' });
-        } 
-
-        //^creating Booking
-        const booking= await Booking.create({
+        // Check if all required fields are provided
+        if (!roomNumber || !guestName || !checkInDate || !checkOutDate || !totalPrice) {
+            return res.status(400).send({ message: 'Please fill in all the required fields.' });
+        }
+        // Create the booking in the database
+        const newBooking = await Booking.create({
             roomNumber,
             guestName,
             checkInDate,
@@ -20,16 +19,40 @@ async function createBooking(req,res){
             totalPrice,
         });
 
-        const updatedRoom=await Room.updateOne({roomNumber},{status:ROOM_STATUS.BOOKED});
+        const updateResult = await Room.updateOne(
+            { roomNumber }, // Filter to find the room by its number
+            { $set: { status: ROOM_STATUS.BOOKED }  } // Set status to "Booked"
+        );
 
-        if (!updatedRoom.modifiedCount) {
-            return res.status(404).json({ message: 'Room not found or already booked.' });
+        // Check if the update was successful
+        if (updateResult.modifiedCount === 0) {
+            return (
+                res.status(400),
+                res.json({ message: 'Room status update failed.' })
+            );
         }
-          // Respond with the created booking and the updated room status
-        res.status(201).json({ booking, message: 'Booking created and room status updated to Booked.' });
-    }catch(err){
-        console.log('Error creating booking or updating room status:', err);
-        res.status(500).json({ message: 'Error creating booking or updating room status.' });
+
+        // Respond with the new booking details
+        res.status(201);
+        res.send({ message: 'Booking created successfully!', booking: newBooking });
+    } catch (err) {
+        console.error('Error creating booking:', err);
+        res.status(500);
+        res.send({ message: 'Error creating booking', error: err.message });
     }
 }
-module.exports={createBooking};
+
+// Get all bookings
+const getBooking = async (req, res) => {
+  try {
+    const bookings = await Booking.find();
+    res.status(200);
+    res.send(bookings);
+  } catch (err) {
+    console.error('Error fetching bookings:', err);
+    res.status(500);
+    res.send({ message: 'Error fetching bookings.' });
+  }
+};
+
+module.exports = { createBooking, getBooking };
